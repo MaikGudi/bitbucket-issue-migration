@@ -164,7 +164,7 @@ def replace_implicit_commit_hashes(body, cmap):
 
 
 def map_bstate_to_gstate(bissue):
-    bstate = bissue["state"]
+    bstate = bissue["state"] 
     if bstate in config.OPEN_ISSUE_OR_PULL_REQUEST_STATES:
         return "open"
     else:
@@ -862,10 +862,11 @@ def bitbucket_to_github(bexport, gimport, cmap, args):
             pull_number = number - pulls_id_offset
             if pull_number in existing_gpulls:
                 print("Update github pull request #{}...".format(number))
-                gimport.update_issue_with_comments(existing_gpulls[pull_number], data)
+                gimport.update_pull_with_comments(existing_gpulls[pull_number], data)
             else:
                 print("Create github pull request #{}...".format(number))
                 try:
+                    print("Pull request data: ", data)
                     gimport.create_pull_with_comments(data)
                 except:
                     print("Failed to process pull request #{}".format(number))

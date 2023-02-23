@@ -81,6 +81,7 @@ class GithubImport:
             "Accept": "application/vnd.github.golden-comet-preview+json"
         }
         res = requests.post(url, json=issue_data, headers=headers)
+        print("Post status: ", res)
         if not res.ok:
             res.raise_for_status()
         import_data = res.json()
@@ -167,16 +168,16 @@ class GithubImport:
         pull.edit(
             title=meta["title"],
             body=meta["body"],
-            state=meta["state"],
+            state="open",   #TODO MG: fix hard coded value
             base=meta["base"],
         )
         pull.set_labels(*meta["labels"])
-        pull.remove_from_assignees(*[
+        pull.remove_from_assignees(*[   #TODO MG fix remove_from_assignees
             x.name for x in pull.assignees
             if x.name not in meta["assignees"]
         ])
         pull.add_to_assignees(*meta["assignees"])
-        (reviewers, team_reviewers) = pull.get_review_request()
+        (reviewers, team_reviewers) = pull.get_review_requests()
         pull.delete_review_request(
             reviewers=[u.name for u in reviewers],
             team_reviewers=[u.name for u in team_reviewers]
@@ -186,16 +187,29 @@ class GithubImport:
 
     def create_pull_with_comments(self, pull_data):
         meta = pull_data["pull"]
+
+        print("create pull")
+        print("Title:", meta["title"])
+        print("Body:", meta["body"])
+        print("base:", meta["base"])
+        print("head", meta["head"])
         pull = self.repo.create_pull(
             title=meta["title"],
             body=meta["body"],
             base=meta["base"],
             head=meta["head"],
         )
+        print(pull)
+        print("set labels...")
         pull.set_labels(*meta["labels"])
         # Workaround for bug https://github.com/PyGithub/PyGithub/issues/1406
+        print("Add to assignees...")
+        print("Assignees data:", meta["assignees"])
         deepcopy(pull).add_to_assignees(*meta["assignees"])
         if meta["reviewers"]:
+            print("reviewers")
             pull.create_review_request(reviewers=meta["reviewers"])
+            print("after reviewers")
         for comment in pull_data["comments"]:
+            print("Comment body from pull request: ", comment["body"])
             pull.create_issue_comment(comment["body"])
