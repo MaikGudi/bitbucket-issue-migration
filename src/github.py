@@ -145,11 +145,11 @@ class GithubImport:
     def update_pull_comments(self, pull, pull_data):
         comments_data = pull_data["comments"]
         pull_id = pull.number
-        print("Pull info:", pull)
-        print("comments_data info: ", comments_data)
+        #print("Pull info:", pull_data)
+        #print("comments_data info: ", comments_data)
         num_comments = len(comments_data)
         existing_comments = list(pull.get_issue_comments())
-        path = "https://github.com/MaikGudi/TestPullRequest2/pull/" + pull_id
+        #path = "https://github.com/MaikGudi/TestPullRequest2/pull/" + int(pull_id)
 
         # Create or update comments
         for comment_num, comment_data in enumerate(comments_data):
@@ -157,8 +157,11 @@ class GithubImport:
             comment_body = comment_data["body"]
             if comment_num < len(existing_comments):
                 existing_comments[comment_num].edit(comment_body)
+            
+            #TODO MG: fix create new comments
             else:
-                pull.create_comment(comment_body, commit_id, path, comment_num)
+                pull.create_issue_comment(comment_body)
+            #    pull.create_comment(comment_body, commit_id, path, comment_num)
 
         # Delete comments in excess
         comments_to_delete = existing_comments[num_comments:]
@@ -187,7 +190,7 @@ class GithubImport:
             team_reviewers=[u.name for u in team_reviewers]
         )
         pull.create_review_request(reviewers=meta["reviewers"])
-        self.update_pull_comments(pull, pull_data["comments"], pull_data)
+        self.update_pull_comments(pull, pull_data)
 
     def create_pull_with_comments(self, pull_data):
         meta = pull_data["pull"]
