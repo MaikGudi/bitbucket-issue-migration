@@ -6,7 +6,8 @@
 
 
 USER_MAPPING = {
-    "maik.gudi": "MaikGudi"
+    "maik.gudi": "MaikGudi",
+    "{62beb341d752af0e54edcd11}": "MaikGudi"
 }
 
 # We map bitbucket's issue "kind" to github "labels".
