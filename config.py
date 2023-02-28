@@ -71,11 +71,7 @@ OPEN_ISSUE_OR_PULL_REQUEST_STATES = {
 # Mapping of known Bitbucket to their corresponding GitHub repo
 # This information is used to convert links
 KNOWN_REPO_MAPPING = {
-<<<<<<< HEAD
     "maikgudi/testissuemigration": "MaikGudi/TestPullRequestMigration2"
-=======
-    "maikgudi/testissuemigration": "MaikGudi/TestPullRequestMigration5"
->>>>>>> db588d9 (Fix update pull request call. Add visibility)
 }
 
 # Mapping of known Bitbucket repos to their number of issues.
@@ -86,9 +82,5 @@ KNOWN_ISSUES_COUNT_MAPPING = {
 }
 
 KNOWN_CMAP_PATHS = {
-<<<<<<< HEAD
     "maikgudi/testissuemigration": "migration_data/cmap.txt"
-=======
-    "maikgudi/testissuemigration": "migration_data/testcomments_cmap.txt"
->>>>>>> db588d9 (Fix update pull request call. Add visibility)
 }
