@@ -149,7 +149,7 @@ class GithubImport:
         print("comments_data info: ", comments_data)
         num_comments = len(comments_data)
         existing_comments = list(pull.get_issue_comments())
-        #path = "https://github.com/{grepo}/pull/{pull_id}".format(grepo=, pull_id=)
+        path = "https://github.com/MaikGudi/TestPullRequest2/pull/" + pull_id
 
         # Create or update comments
         for comment_num, comment_data in enumerate(comments_data):
