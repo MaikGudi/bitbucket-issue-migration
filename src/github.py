@@ -170,19 +170,25 @@ class GithubImport:
             gcomment.delete()
 
     def update_pull_with_comments(self, pull, pull_data):
+        print(pull_data)
         meta = pull_data["pull"]
         assert meta["head"] == pull.head.ref
         pull.edit(
             title=meta["title"],
             body=meta["body"],
-            state="open",   #TODO MG: fix hard coded value
+            state="closed" if meta["closed"] else "open",   #TODO MG: fix hard coded value
             base=meta["base"],
         )
         pull.set_labels(*meta["labels"])
-        #pull.remove_from_assignees(*[   #TODO MG fix remove_from_assignees
-        #    x.name for x in pull.assignees
-        #    if x.name not in meta["assignees"]
-        #])
+        #print("Assignees to remove: ", [x.name for x in pull.assignees
+        #   if x.name not in meta["assignees"]])
+
+        assignees_to_be_removed = [x.name for x in pull.assignees
+            if x.name not in meta["assignees"]]
+
+        if not any(e is None for e in assignees_to_be_removed):
+            pull.remove_from_assignees(*assignees_to_be_removed)
+
         pull.add_to_assignees(*meta["assignees"])
         (reviewers, team_reviewers) = pull.get_review_requests()
         pull.delete_review_request(
