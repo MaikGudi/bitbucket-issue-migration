@@ -299,9 +299,11 @@ def construct_gcomment_body(bcomment, bcomments_by_id, cmap, args, bexport):
         bcomment = bexport.get_detailed_comment(bcomment)
         inline_data = bcomment["inline"]
         file_path = inline_data["path"]
+        #bitbucket_url = urlparse(bcomment["links"]["html"])
 
         if inline_data["outdated"]:
-            message_prefix = "Outdated location"
+            message_prefix = "Outdated location"    #TODO Link to Bitbucket Comment
+
         else:
             message_prefix = "Location"
 
@@ -310,6 +312,7 @@ def construct_gcomment_body(bcomment, bcomments_by_id, cmap, args, bexport):
             # Disabled, because the hg_commit looks wrong
             diff_url = urlparse(bcomment["links"]["code"]["href"])
             snippet_hg_commit = diff_url.path.split("..")[-1]
+            print("snippet_comment", snippet_hg_commit)
             snippet_git_commit = cmap.convert_commit_hash(snippet_hg_commit)
             if snippet_git_commit is not None:
                 snippet_file_url = "https://github.com/{}/blob/{}/{}".format(
@@ -336,15 +339,17 @@ def construct_gcomment_body(bcomment, bcomments_by_id, cmap, args, bexport):
             else:
                 sb.append("> **{}:** `{}`\n".format(
                     message_prefix,
-                    file_path
+                    file_path,
+                    #bitbucket_url
                 ))
         elif None in (inline_data["from"], inline_data["to"]) or inline_data["from"] == inline_data["to"]:
             # Single line
             the_line = inline_data["to"] if inline_data["from"] is None else inline_data["from"]
-            sb.append("> **{}:** line {} of `{}`\n".format(
+            sb.append("> **{}:** line {} of `{}`\n Link to Bitbucket: {} \n".format(
                 message_prefix,
                 the_line,
-                file_path
+                file_path,
+                bitbucket_url
             ))
             if show_snippet:
                 sb.append("> {}#L{}\n".format(
@@ -583,6 +588,8 @@ def construct_gissue_comments(bcomments, cmap, args, bexport):
     comments.sort(key=lambda x: x["created_at"])
     return comments
 
+def construct_gpull_request_comments():
+    pass
 
 def construct_gist_description_for_issue_attachments(bissue, bexport):
     return "Attachments for issue https://github.com/{}/issues/{}".format(

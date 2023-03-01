@@ -160,8 +160,8 @@ class GithubImport:
             
             #TODO MG: fix create new comments
             else:
-                pull.create_issue_comment(comment_body)
-            #    pull.create_comment(comment_body, commit_id, path, comment_num)
+                pull.create_issue_comment(comment_body) #TODO MG: get newest commit_id, path and position
+            #    pull.create_comment(comment_body, commit_id, path, position)
 
         # Delete comments in excess
         comments_to_delete = existing_comments[num_comments:]
@@ -170,13 +170,13 @@ class GithubImport:
             gcomment.delete()
 
     def update_pull_with_comments(self, pull, pull_data):
-        print(pull_data)
+        #print(pull_data)
         meta = pull_data["pull"]
         assert meta["head"] == pull.head.ref
         pull.edit(
             title=meta["title"],
             body=meta["body"],
-            state="closed" if meta["closed"] else "open",   #TODO MG: fix hard coded value
+            state="closed" if meta["closed"] else "open",  
             base=meta["base"],
         )
         pull.set_labels(*meta["labels"])

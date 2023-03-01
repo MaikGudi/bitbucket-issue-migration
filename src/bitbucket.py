@@ -1,6 +1,7 @@
 from requests import Session
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
+import json
 
 from .utils import get_request_content, get_request_json
 
@@ -88,7 +89,8 @@ class BitbucketExport:
 
     def get_pull_comments(self, pulls_id):
         comments = list(get_paginated_json(self.repo_url + "/pullrequests/" + str(pulls_id) + "/comments", self.session))
-        print("Bitbucket Comment: ", comments)
+        for comment in comments:
+            print("Bitbucket Comment : ", json.dumps(comment))
         return {comment["id"]: comment for comment in comments}
 
     def get_pull_activity(self, pulls_id):
