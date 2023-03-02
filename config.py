@@ -30,7 +30,8 @@ COMPONENT_MAPPING = {
 # The only github states are "open" and "closed".
 # Therefore, we map some bitbucket states to github "labels".
 STATE_MAPPING = {
-
+    "MERGED": "merged",
+    "OPEN": None,
 }
 
 # Bitbucket has several issue and pull request states.

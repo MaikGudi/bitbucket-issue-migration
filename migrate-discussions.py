@@ -299,18 +299,22 @@ def construct_gcomment_body(bcomment, bcomments_by_id, cmap, args, bexport):
         bcomment = bexport.get_detailed_comment(bcomment)
         inline_data = bcomment["inline"]
         file_path = inline_data["path"]
-        #bitbucket_url = urlparse(bcomment["links"]["html"])
+        bitbucket_url = None
+        print("Bitbucket url: ", bitbucket_url)
 
         if inline_data["outdated"]:
             message_prefix = "Outdated location"    #TODO Link to Bitbucket Comment
+            bitbucket_url = bcomment["links"]["html"]["href"]
 
         else:
             message_prefix = "Location"
 
         show_snippet = False
-        if False and "code" in bcomment["links"]:
+        if "code" in bcomment["links"]:
+            #print(bcomment)
             # Disabled, because the hg_commit looks wrong
             diff_url = urlparse(bcomment["links"]["code"]["href"])
+            print(bcomment["links"]["code"]["href"])
             snippet_hg_commit = diff_url.path.split("..")[-1]
             print("snippet_comment", snippet_hg_commit)
             snippet_git_commit = cmap.convert_commit_hash(snippet_hg_commit)
@@ -340,8 +344,12 @@ def construct_gcomment_body(bcomment, bcomments_by_id, cmap, args, bexport):
                 sb.append("> **{}:** `{}`\n".format(
                     message_prefix,
                     file_path
-                    #bitbucket_url
                 ))
+                if bitbucket_url:
+                    sb.append(" Bitbucket Link: {} \n".format(
+                        bitbucket_url
+                    ))
+
         elif None in (inline_data["from"], inline_data["to"]) or inline_data["from"] == inline_data["to"]:
             # Single line
             the_line = inline_data["to"] if inline_data["from"] is None else inline_data["from"]
@@ -349,13 +357,16 @@ def construct_gcomment_body(bcomment, bcomments_by_id, cmap, args, bexport):
                 message_prefix,
                 the_line,
                 file_path
-                #bitbucket_url
             ))
             if show_snippet:
                 sb.append("> {}#L{}\n".format(
                     snippet_file_url,
                     the_line
                 ))
+            if bitbucket_url:
+                    sb.append(" Bitbucket Link: {} \n".format(
+                        bitbucket_url
+                    ))
         else:
             # Multiple lines
             from_line = inline_data["from"]
@@ -372,6 +383,10 @@ def construct_gcomment_body(bcomment, bcomments_by_id, cmap, args, bexport):
                     to_line,
                     to_line
                 ))
+            if bitbucket_url:
+                    sb.append(" Bitbucket Link: {} \n".format(
+                        bitbucket_url
+                    ))    
     sb.append("\n")
     if "parent" in bcomment:
         parent_comment = bcomments_by_id[bcomment["parent"]["id"]]
@@ -714,7 +729,7 @@ def construct_gissue_or_gpull_from_bpull(bpull, bexport, cmap, args):
     comments.sort(key=lambda x: x["created_at"])
 
     # Construct labels
-    labels = ["pull request"] + map_bstate_to_glabels(bpull)
+    labels = map_bstate_to_glabels(bpull)
 
     is_closed = map_bstate_to_gstate(bpull) == "closed"
     if is_closed:
