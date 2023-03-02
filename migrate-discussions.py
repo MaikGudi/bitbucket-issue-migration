@@ -339,17 +339,17 @@ def construct_gcomment_body(bcomment, bcomments_by_id, cmap, args, bexport):
             else:
                 sb.append("> **{}:** `{}`\n".format(
                     message_prefix,
-                    file_path,
+                    file_path
                     #bitbucket_url
                 ))
         elif None in (inline_data["from"], inline_data["to"]) or inline_data["from"] == inline_data["to"]:
             # Single line
             the_line = inline_data["to"] if inline_data["from"] is None else inline_data["from"]
-            sb.append("> **{}:** line {} of `{}`\n Link to Bitbucket: {} \n".format(
+            sb.append("> **{}:** line {} of `{}`\n".format(
                 message_prefix,
                 the_line,
-                file_path,
-                bitbucket_url
+                file_path
+                #bitbucket_url
             ))
             if show_snippet:
                 sb.append("> {}#L{}\n".format(

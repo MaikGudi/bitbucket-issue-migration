@@ -6,58 +6,31 @@
 
 
 USER_MAPPING = {
-    "maik.gudi": "MaikGudi",
+    "maik.gudi": "MaikGudi",    # TODO MG: useful line?
     "{62beb341d752af0e54edcd11}": "MaikGudi"
 }
 
+ #TODO remove labels
+
 # We map bitbucket's issue "kind" to github "labels".
 KIND_MAPPING = {
-    "bug": "bug",
-    "enhancement": "enhancement",
-    "proposal": "proposal",
-    "task": "task",
+
 }
 
 # We map bitbucket's issue "priority" to github "labels".
-PRIORITY_MAPPING = {
-    "trivial": "trivial",
-    "minor": "minor",
-    "major": "major",
-    "critical": "critical",
-    "blocker": "blocker",
+PRIORITY_MAPPING = {       
+
 }
 
 # We map bitbucket's issue "component" to github "labels".
 COMPONENT_MAPPING = {
-    "Consistency": "consistency",
-    "Parser": "parser",
-    "silver-obligations": "silver-obligations",
-    "Triggers": "triggers",
-    "Examples": "examples",
-    "Functions": "functions",
-    "Logging, Reporting, IDE": "logging-reporting-ide",
-    "Magic Wands": "magic-wands",
-    "Permissions": "permissions",
-    "Quantified Permissions": "quantified-permissions",
-    "Silver": "silver",
-    "Z3": "z3"
+
 }
 
 # The only github states are "open" and "closed".
 # Therefore, we map some bitbucket states to github "labels".
 STATE_MAPPING = {
-    "on hold": "on hold",
-    "invalid": "invalid",
-    "duplicate": "duplicate",
-    "wontfix": "wontfix",
-    "resolved": None,
-    "new": None,
-    "open": None,
-    "closed": None,
-    "DECLINED": "declined",
-    "MERGED": "merged",
-    "SUPERSEDED": "superseeded",
-    "OPEN": None,
+
 }
 
 # Bitbucket has several issue and pull request states.

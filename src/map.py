@@ -65,15 +65,11 @@ class CommitMap:
                     return repo_name
         return None
 
-    def convert_commit_hash(self, hg_hash):
-        """Maps the hash of a mercurial commit to the corresponding git commit hash.
-        Returns None in case no matching has been found.
+        
+    def convert_commit_hash(self, hg_hash): 
+        """returns hg_hash 
         """
-        for repo_name in self.maps:
-            for known_hg_hash in self.maps[repo_name]:
-                if known_hg_hash.startswith(hg_hash):
-                    return self.maps[repo_name][known_hg_hash]
-        return None
+        return hg_hash  
 
     def convert_branch_name(self, branch, repo=None, default_repo=None):
         """Convert a branch of a bitbucket repo to the name of a github branch.
