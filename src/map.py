@@ -18,6 +18,8 @@ class CommitMap:
         return match.group(1), match.group(2)
 
     def check_uniqueness(self):
+        pass    
+        # not needed for git to git migration
         # all hg as well as git commit hashes should be unique (including their 7 character prefix):
         print("checking uniqueness of hg and git hashes...")
         for repo1 in self.maps:

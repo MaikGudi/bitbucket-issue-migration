@@ -27,6 +27,24 @@ def replace_explicit_links_to_issues(body):
             repo=grepo, issue_nr=issue_nr)
     return EXPLICIT_ISSUE_LINK_RE.sub(replace_issue_link, body)
 
+#TODO replace picture links
+
+PICTURE_RE = re.compile(r'\!\[\]\(https://bitbucket.org/repo/(.*)\/images\/(.*.png)\)'
+)
+def replace_picture_links(body):
+    #TODO MG: replace pictures to Bitbucket Repo
+    def replace_picture_link(match):
+        repo_id = match.group(1)
+        bimage = match.group(2)
+        #print("image link: ", bimage)
+        if bimage is None:
+            print("unchanged")
+            #leave unchanged
+            return match.group(0)
+        #print(r'[(https://bitbucket.com/repo/{repo_id}/images/{image})](https://bitbucket.com/repo/{repo_id}/images/{image})'.format(repo_id=repo_id, image=bimage))
+        return r'[Bitbucket Picture](https://bitbucket.com/repo/{repo_id}/images/{image})'.format(repo_id=repo_id, image=bimage)
+    #print("modified: ",replace_picture_link(body))
+    return PICTURE_RE.sub(replace_picture_link, body)   #replace picture
 
 # test for all known repo names (separated by a single whitespace from issue)
 # the disjunction ensures that text between squared brackets is not captured
@@ -140,9 +158,11 @@ def replace_explicit_commit_hashes(body, cmap):
             grepo=grepo, git_hash=git_hash)
     return EXPLICIT_COMMIT_HASH_RE.sub(replace_commit_hash, body)
 
+#TODO MG: picture name triggers implicit commit_hashes. Redefine Regex. 
+#TODO MG: fix test length 11
 
 # test for hex characters of at least length 7 starting and ending at a word boundary:
-IMPLICIT_COMMIT_HASH_RE = re.compile(r'\[.*?\]|\b([0-9A-Fa-f]{7,})\b')
+IMPLICIT_COMMIT_HASH_RE = re.compile(r'\[.*?\]|\b([0-9A-Fa-f]{11,})\b')
 def replace_implicit_commit_hashes(body, cmap):
     def replace_commit_hash(match):
         hg_hash = match.group(1)
@@ -251,11 +271,13 @@ def map_content(content, cmap, args):
     # replace first links to PRs because matching "issue" is optional so we need to avoid interpreting
     # "pull request #1" as an issue
     tmp = replace_explicit_links_to_prs(content)
+    tmp = replace_picture_links(tmp)
     tmp = replace_implicit_links_to_prs(tmp, args)
     tmp = replace_explicit_links_to_issues(tmp)
     tmp = replace_implicit_links_to_issues(tmp, args)
     tmp = replace_links_to_users(tmp)
     tmp = replace_explicit_commit_hashes(tmp, cmap)
+    #print(replace_implicit_commit_hashes(tmp, cmap))
     return replace_implicit_commit_hashes(tmp, cmap)
 
 
@@ -300,10 +322,10 @@ def construct_gcomment_body(bcomment, bcomments_by_id, cmap, args, bexport):
         inline_data = bcomment["inline"]
         file_path = inline_data["path"]
         bitbucket_url = None
-        print("Bitbucket url: ", bitbucket_url)
+        #print("Bitbucket url: ", bitbucket_url)
 
         if inline_data["outdated"]:
-            message_prefix = "Outdated location"    #TODO Link to Bitbucket Comment
+            message_prefix = "Outdated location"
             bitbucket_url = bcomment["links"]["html"]["href"]
 
         else:
@@ -324,6 +346,8 @@ def construct_gcomment_body(bcomment, bcomments_by_id, cmap, args, bexport):
                     snippet_git_commit,
                     file_path
                 )
+                # example for diff: https://github.com/MaikGudi/TestPullRequestMigration2/pull/1/files#diff-1ce8375258815101d64e353a29cf665ca38a48ba1d352e5dd91d335d49e69a23
+                # example for blob: https://github.com/MaikGudi/TestPullRequestMigration2/blob/ea4bf9dbbbe5cc6ce0e4098d9a74f60687d1aad9/SomeChanges5.txt
                 snippet_url_status = requests.get(snippet_file_url).status_code
                 show_snippet = snippet_url_status == 200
                 if snippet_url_status == 404:
@@ -346,7 +370,7 @@ def construct_gcomment_body(bcomment, bcomments_by_id, cmap, args, bexport):
                     file_path
                 ))
                 if bitbucket_url:
-                    sb.append(" Bitbucket Link: {} \n".format(
+                    sb.append("Bitbucket Link: {} \n".format(
                         bitbucket_url
                     ))
 
@@ -364,7 +388,7 @@ def construct_gcomment_body(bcomment, bcomments_by_id, cmap, args, bexport):
                     the_line
                 ))
             if bitbucket_url:
-                    sb.append(" Bitbucket Link: {} \n".format(
+                    sb.append("Bitbucket Link: {} \n".format(
                         bitbucket_url
                     ))
         else:
@@ -384,7 +408,7 @@ def construct_gcomment_body(bcomment, bcomments_by_id, cmap, args, bexport):
                     to_line
                 ))
             if bitbucket_url:
-                    sb.append(" Bitbucket Link: {} \n".format(
+                    sb.append("Bitbucket Link: {} \n".format(
                         bitbucket_url
                     ))    
     sb.append("\n")
@@ -1037,7 +1061,7 @@ def main():
     bexport = BitbucketExport(args.bitbucket_repository, args.bitbucket_username, args.bitbucket_password)
     gimport = GithubImport(args.github_access_token, args.github_repository, debug=False)
     cmap = CommitMap()
-    print("Load mapping of mercurial commits to git...")
+    #print("Load mapping of mercurial commits to git...")
     cmap.load_from_disk()
     if args.check:
         check(bexport=bexport, gimport=gimport, args=args)

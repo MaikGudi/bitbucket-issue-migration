@@ -90,7 +90,9 @@ class BitbucketExport:
     def get_pull_comments(self, pulls_id):
         comments = list(get_paginated_json(self.repo_url + "/pullrequests/" + str(pulls_id) + "/comments", self.session))
         #for comment in comments:
-            #print("Bitbucket Comment : ", json.dumps(comment))
+            #print("\n Bitbucket Comment : \n", json.dumps(comment))
+            #comment["content"]["raw"]   #TODO MG: Link Pictures
+
         return {comment["id"]: comment for comment in comments}
 
     def get_pull_activity(self, pulls_id):
