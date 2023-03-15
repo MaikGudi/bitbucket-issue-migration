@@ -27,12 +27,9 @@ def replace_explicit_links_to_issues(body):
             repo=grepo, issue_nr=issue_nr)
     return EXPLICIT_ISSUE_LINK_RE.sub(replace_issue_link, body)
 
-#TODO replace picture links
-
-PICTURE_RE = re.compile(r'\!\[\]\(https://bitbucket.org/repo/(.*)\/images\/(.*.png)\)'
+PICTURE_RE = re.compile(r'\!\[\]\(https://bitbucket.org/repo/(.*)\/images\/(.*\.png)\)'
 )
 def replace_picture_links(body):
-    #TODO MG: replace pictures to Bitbucket Repo
     def replace_picture_link(match):
         repo_id = match.group(1)
         bimage = match.group(2)
@@ -332,14 +329,20 @@ def construct_gcomment_body(bcomment, bcomments_by_id, cmap, args, bexport):
             message_prefix = "Location"
 
         show_snippet = False
-        if "code" in bcomment["links"]:
+        
+        if show_snippet and "code" in bcomment["links"]:
             #print(bcomment)
             # Disabled, because the hg_commit looks wrong
             diff_url = urlparse(bcomment["links"]["code"]["href"])
-            print(bcomment["links"]["code"]["href"])
-            snippet_hg_commit = diff_url.path.split("..")[-1]
-            print("snippet_comment", snippet_hg_commit)
-            snippet_git_commit = cmap.convert_commit_hash(snippet_hg_commit)
+            #print(bcomment["links"]["code"]["href"])
+            snippet_hg_commit = diff_url.path.split("..")[-1]   # example https://api.bitbucket.org/2.0/repositories/maikgudi/testissuemigration/diff/maikgudi/testissuemigration:effefffc267b..cebc4164673f?path=SomeChanges2.txt
+            right_commit = diff_url.path.split("..")[0][-12:]
+            #TODO MG: Use other SHA for blob
+    
+            #print("snippet_commit", snippet_hg_commit)
+            #print("right_commit", right_commit)
+            #print("right_commit2", right_commit2)
+            snippet_git_commit = cmap.convert_commit_hash(right_commit)
             if snippet_git_commit is not None:
                 snippet_file_url = "https://github.com/{}/blob/{}/{}".format(
                     map_brepo_to_grepo(bexport.get_repo_full_name()),
@@ -348,7 +351,8 @@ def construct_gcomment_body(bcomment, bcomments_by_id, cmap, args, bexport):
                 )
                 # example for diff: https://github.com/MaikGudi/TestPullRequestMigration2/pull/1/files#diff-1ce8375258815101d64e353a29cf665ca38a48ba1d352e5dd91d335d49e69a23
                 # example for blob: https://github.com/MaikGudi/TestPullRequestMigration2/blob/ea4bf9dbbbe5cc6ce0e4098d9a74f60687d1aad9/SomeChanges5.txt
-                snippet_url_status = requests.get(snippet_file_url).status_code
+                #print("snippet_file_url", snippet_file_url)
+                snippet_url_status = requests.get(snippet_file_url).status_code #TODO MG: implement authentification 
                 show_snippet = snippet_url_status == 200
                 if snippet_url_status == 404:
                     print("Warning: page '{}' does not exist".format(snippet_file_url))
@@ -616,13 +620,36 @@ def construct_gissue_comments(bcomments, cmap, args, bexport):
             if "deleted" in bcomment and bcomment["deleted"]:
                 continue
             # Construct comment
+            inline = path = commit_id = None
+            position = 0    # default value
+            
+            if "inline" in bcomment:
+                inline = True
+                path = bcomment["inline"]["path"]
+                #position = bcomment["inline"]["from"]
+                position = bcomment["inline"]["from"] if bcomment["inline"]["from"] else 0
+                diff_url = urlparse(bcomment["links"]["code"]["href"])
+                #print(bcomment["links"]["code"]["href"])
+                commit_id = diff_url.path.split("..")[-1]
+                right_commit = diff_url.path.split("..")[0][-12:]
+            #else:
+                #skip no inline comments
+                #print("not inline")
+            
             comment = {
                 "body": construct_gcomment_body(bcomment, bcomments, cmap, args, bexport),
-                "created_at": convert_date(bcomment["created_on"])
+                "created_at": convert_date(bcomment["created_on"]),
+                "meta": {
+                    "inline": inline,
+                    "commit_id": right_commit,
+                    "position": position,
+                    "path": path
+                }
             }
             comments.append(comment)
         except:
             print("Failed to get comment id {}".format(comment_id))
+            print(bcomment)
 
     comments.sort(key=lambda x: x["created_at"])
     return comments
@@ -908,7 +935,7 @@ def bitbucket_to_github(bexport, gimport, cmap, args):
             pull_number = number - pulls_id_offset
             if pull_number in existing_gpulls:
                 print("Update github pull request #{}...".format(number))
-                gimport.update_pull_with_comments(existing_gpulls[pull_number], data)
+                gimport.update_pull_with_comments(existing_gpulls[pull_number], data)   #TODO MG: provide pull data
             else:
                 print("Create github pull request #{}...".format(number))
                 try:

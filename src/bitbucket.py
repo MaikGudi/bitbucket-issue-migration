@@ -91,7 +91,7 @@ class BitbucketExport:
         comments = list(get_paginated_json(self.repo_url + "/pullrequests/" + str(pulls_id) + "/comments", self.session))
         #for comment in comments:
             #print("\n Bitbucket Comment : \n", json.dumps(comment))
-            #comment["content"]["raw"]   #TODO MG: Link Pictures
+            #comment["content"]["raw"] 
 
         return {comment["id"]: comment for comment in comments}
 

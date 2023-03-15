@@ -6,11 +6,9 @@
 
 
 USER_MAPPING = {
-    "maik.gudi": "MaikGudi",    # TODO MG: useful line?
-    "{62beb341d752af0e54edcd11}": "MaikGudi"
+    "maik.gudi": "MaikGudi",    # maps bitbucket user to github user
+    "{62beb341d752af0e54edcd11}": "MaikGudi"    #maps bitbucket account_id to github user. This is important for user mentions
 }
-
- #TODO remove labels
 
 # We map bitbucket's issue "kind" to github "labels".
 KIND_MAPPING = {

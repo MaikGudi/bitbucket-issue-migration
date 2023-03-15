@@ -146,7 +146,7 @@ class GithubImport:
         comments_data = pull_data["comments"]
         pull_id = pull.number
         #print("Pull info:", pull_data)
-        #print("comments_data info: ", comments_data)
+        print("comments_data info: ", comments_data)
         num_comments = len(comments_data)
         existing_comments = list(pull.get_issue_comments())
         #path = "https://github.com/MaikGudi/TestPullRequest2/pull/" + int(pull_id)
@@ -160,7 +160,20 @@ class GithubImport:
             
             #TODO MG: fix create new comments
             else:
-                pull.create_issue_comment(comment_body) #TODO MG: get newest commit_id, path and position
+                meta = comment_data["meta"]
+                commit_id = meta["commit_id"]
+                path = meta["path"]
+                position = meta["position"]
+                commit = self.repo.get_commit(commit_id)
+                print("commit: ",commit)
+                print(meta)
+
+                if meta["inline"] != None:
+                    print("create comment")
+                    pull.create_review_comment(comment_body,commit, path, position)
+                else:
+                    print("create issue comment")
+                    pull.create_issue_comment(comment_body) #TODO MG: get newest commit_id, path and position
             #    pull.create_comment(comment_body, commit_id, path, position)
 
         # Delete comments in excess
@@ -170,7 +183,7 @@ class GithubImport:
             gcomment.delete()
 
     def update_pull_with_comments(self, pull, pull_data):
-        #print(pull_data)
+        #print("Pull_data: ", pull_data)
         meta = pull_data["pull"]
         assert meta["head"] == pull.head.ref
         pull.edit(
@@ -180,7 +193,7 @@ class GithubImport:
             base=meta["base"],
         )
         pull.set_labels(*meta["labels"])
-        #print("Assignees to remove: ", [x.name for x in pull.assignees
+        #print("Assignees to be removed: ", [x.name for x in pull.assignees
         #   if x.name not in meta["assignees"]])
 
         assignees_to_be_removed = [x.name for x in pull.assignees
