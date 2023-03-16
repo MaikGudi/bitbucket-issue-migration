@@ -155,8 +155,7 @@ def replace_explicit_commit_hashes(body, cmap):
             grepo=grepo, git_hash=git_hash)
     return EXPLICIT_COMMIT_HASH_RE.sub(replace_commit_hash, body)
 
-#TODO MG: picture name triggers implicit commit_hashes. Redefine Regex. 
-#TODO MG: fix test length 11
+#TODO MG: picture name triggers implicit commit_hashes. Redefine Regex. Fix test length 11
 
 # test for hex characters of at least length 7 starting and ending at a word boundary:
 IMPLICIT_COMMIT_HASH_RE = re.compile(r'\[.*?\]|\b([0-9A-Fa-f]{11,})\b')
@@ -607,12 +606,13 @@ def construct_gcomment_body_for_approval_activity(approval_activity):
         on_date
     )
 
-
+# Also constructs pull requests review comments
 def construct_gissue_comments(bcomments, cmap, args, bexport):
     comments = []
-
+    order = 0
     for comment_id, bcomment in bcomments.items():
         try:
+            
             # Skip empty comments
             if bcomment["content"]["raw"] is None:
                 continue
@@ -620,30 +620,29 @@ def construct_gissue_comments(bcomments, cmap, args, bexport):
             if "deleted" in bcomment and bcomment["deleted"]:
                 continue
             # Construct comment
-            inline = path = commit_id = None
-            position = 0    # default value
+            inline = path = commit_id = position = None  
             
             if "inline" in bcomment:
                 inline = True
                 path = bcomment["inline"]["path"]
-                #position = bcomment["inline"]["from"]
-                position = bcomment["inline"]["from"] if bcomment["inline"]["from"] else 0
+                #print(bcomment["inline"]["from"])
+                position = bcomment["inline"]["to"] if bcomment["inline"]["to"] else 1  # WORKAROUND: default value 1. File comments will be put on the first line of code. https://github.blog/changelog/2023-03-14-comment-on-files-in-a-pull-request-public-beta/
                 diff_url = urlparse(bcomment["links"]["code"]["href"])
-                #print(bcomment["links"]["code"]["href"])
-                commit_id = diff_url.path.split("..")[-1]
-                right_commit = diff_url.path.split("..")[0][-12:]
+                commit_id = diff_url.path.split("..")[0][-12:]
             #else:
                 #skip no inline comments
                 #print("not inline")
             
+            order += 1
             comment = {
                 "body": construct_gcomment_body(bcomment, bcomments, cmap, args, bexport),
                 "created_at": convert_date(bcomment["created_on"]),
                 "meta": {
                     "inline": inline,
-                    "commit_id": right_commit,
+                    "commit_id": commit_id,
                     "position": position,
-                    "path": path
+                    "path": path,
+                    "order": order
                 }
             }
             comments.append(comment)
@@ -651,7 +650,7 @@ def construct_gissue_comments(bcomments, cmap, args, bexport):
             print("Failed to get comment id {}".format(comment_id))
             print(bcomment)
 
-    comments.sort(key=lambda x: x["created_at"])
+    #comments.sort(key=lambda x: x["created_at"])   #TODO: fix update pull request review comments (sort and generate map)
     return comments
 
 def construct_gpull_request_comments():
@@ -935,7 +934,7 @@ def bitbucket_to_github(bexport, gimport, cmap, args):
             pull_number = number - pulls_id_offset
             if pull_number in existing_gpulls:
                 print("Update github pull request #{}...".format(number))
-                gimport.update_pull_with_comments(existing_gpulls[pull_number], data)   #TODO MG: provide pull data
+                gimport.update_pull_with_comments(existing_gpulls[pull_number], data)
             else:
                 print("Create github pull request #{}...".format(number))
                 try:

@@ -92,7 +92,7 @@ class BitbucketExport:
         #for comment in comments:
             #print("\n Bitbucket Comment : \n", json.dumps(comment))
             #comment["content"]["raw"] 
-
+        #TODO: MG order comments by type. Fix Update pull requests review comments.
         return {comment["id"]: comment for comment in comments}
 
     def get_pull_activity(self, pulls_id):
