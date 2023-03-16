@@ -316,7 +316,7 @@ def construct_gcomment_body(bcomment, bcomments_by_id, cmap, args, bexport):
     if "inline" in bcomment:
         bcomment = bexport.get_detailed_comment(bcomment)
         inline_data = bcomment["inline"]
-        file_path = inline_data["path"]
+        file_path = "./" + inline_data["path"]
         bitbucket_url = None
         #print("Bitbucket url: ", bitbucket_url)
 

@@ -148,8 +148,13 @@ class GithubImport:
         #print("Pull info:", pull_data)
         print("comments_data info: ", comments_data)
         num_comments = len(comments_data)
-        existing_comments = list(pull.get_issue_comments()) + list(pull.get_review_comments())  #TODO MG: Implement update for review comments
-        #path = "https://github.com/MaikGudi/TestPullRequest2/pull/" + int(pull_id)
+        existing_comments = list(pull.get_issue_comments()) + list(pull.get_review_comments())
+
+        # MG: WORKAROUND for comment updates: delete previous comments then create new comments. Edit only alters the comment body, but not the type of the comment (Review/Issue) 
+        comments_to_delete = existing_comments
+        for i, gcomment in enumerate(comments_to_delete):
+            print("Delete old github comment {}/{} of pull request #{}...".format(i + 1, len(comments_to_delete), pull_id))
+            gcomment.delete()
 
         # Create or update comments
         for comment_num, comment_data in enumerate(comments_data):
@@ -157,35 +162,25 @@ class GithubImport:
             comment_body = comment_data["body"]
             
             """
-            # MG: WORKAROUND for comment updates: delete previous comments then create new comments  
-            comments_to_delete = existing_comments[num_comments:]
-            for i, gcomment in enumerate(comments_to_delete):
-                print("Delete extra github comment {}/{} of pull request #{}...".format(i + 1, len(comments_to_delete), pull_id))
-                gcomment.delete()
-            """
-
             if comment_num < len(existing_comments):
-                existing_comments[comment_num].edit(comment_body)
-            
-            #TODO: MG: fix create new comments
+                existing_comments[comment_num].edit(comment_body)   
+            """
+            meta = comment_data["meta"]
+
+            if meta["inline"]:
+                commit_id = meta["commit_id"]
+                path = meta["path"]
+                position = meta["position"]
+                commit = self.repo.get_commit(commit_id)
+                print("commit: ",commit)
+                print(meta)
+
+                print("create comment")
+                pull.create_review_comment(comment_body,commit, path, position)
+
             else:
-                meta = comment_data["meta"]
-
-                if meta["inline"] != None:
-                    commit_id = meta["commit_id"]
-                    path = meta["path"]
-                    position = meta["position"]
-                    commit = self.repo.get_commit(commit_id)
-                    print("commit: ",commit)
-                    print(meta)
-
-                    print("create comment")
-                    pull.create_review_comment(comment_body,commit, path, position)
-
-                else:
-                    print("create issue comment")
-                    pull.create_issue_comment(comment_body) #TODO MG: get newest commit_id, path and position
-            #    pull.create_comment(comment_body, commit_id, path, position)
+                print("create issue comment")
+                pull.create_issue_comment(comment_body)
 
         # Delete comments in excess
         comments_to_delete = existing_comments[num_comments:]
@@ -249,10 +244,9 @@ class GithubImport:
             print("after reviewers")
         for comment in pull_data["comments"]:
             print("Comment body from pull request: ", comment["body"])
-            #pull.create_issue_comment(comment["body"])
 
             meta = comment["meta"]
-            if meta["inline"] != None:
+            if meta["inline"]:
                 commit_id = meta["commit_id"]
                 path = meta["path"]
                 position = meta["position"]
