@@ -620,7 +620,7 @@ def construct_gissue_comments(bcomments, cmap, args, bexport):
             if "deleted" in bcomment and bcomment["deleted"]:
                 continue
             # Construct comment
-            inline = path = commit_id = position = None  
+            inline = path = commit_id = position = parent = None  
             
             if "inline" in bcomment:
                 inline = True
@@ -629,11 +629,14 @@ def construct_gissue_comments(bcomments, cmap, args, bexport):
                 position = bcomment["inline"]["to"] if bcomment["inline"]["to"] else 1  # WORKAROUND: default value 1. File comments will be put on the first line of code. https://github.blog/changelog/2023-03-14-comment-on-files-in-a-pull-request-public-beta/
                 diff_url = urlparse(bcomment["links"]["code"]["href"])
                 commit_id = diff_url.path.split("..")[0][-12:]
+                if "parent" in bcomment:    # reply comment
+                    parent = bcomment["parent"]
+
             #else:
                 #skip no inline comments
                 #print("not inline")
             
-            order += 1
+            #order += 1
             comment = {
                 "body": construct_gcomment_body(bcomment, bcomments, cmap, args, bexport),
                 "created_at": convert_date(bcomment["created_on"]),
@@ -642,7 +645,7 @@ def construct_gissue_comments(bcomments, cmap, args, bexport):
                     "commit_id": commit_id,
                     "position": position,
                     "path": path,
-                    "order": order
+                    "parent": parent
                 }
             }
             comments.append(comment)
@@ -940,8 +943,9 @@ def bitbucket_to_github(bexport, gimport, cmap, args):
                 try:
                     print("Pull request data: ", data)
                     gimport.create_pull_with_comments(data)
-                except:
+                except Exception as e:
                     print("Failed to process pull request #{}".format(number))
+                    print("Error message: "+ str(e))
         else:
             print("Error: unknown type '{}' for data '{}'".format(type, data))
 

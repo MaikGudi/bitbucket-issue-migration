@@ -44,7 +44,7 @@ OPEN_ISSUE_OR_PULL_REQUEST_STATES = {
 # Mapping of known Bitbucket to their corresponding GitHub repo
 # This information is used to convert links
 KNOWN_REPO_MAPPING = {
-    "maikgudi/testissuemigration": "MaikGudi/TestPullRequestMigration2"
+    "maikgudi/testissuemigration": "MaikGudi/TestPullRequestMigration3"
 }
 
 # Mapping of known Bitbucket repos to their number of issues.

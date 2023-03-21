@@ -219,25 +219,29 @@ class GithubImport:
 
     def create_pull_with_comments(self, pull_data):
         meta = pull_data["pull"]
+        delay = 1
 
         print("create pull")
         print("Title:", meta["title"])
         print("Body:", meta["body"])
         print("base:", meta["base"])
         print("head", meta["head"])
+        print("waiting...")
+        sleep(delay)
         pull = self.repo.create_pull(
             title=meta["title"],
             body=meta["body"],
             base=meta["base"],
             head=meta["head"],
         )
-        print(pull)
+        #print(pull)
         print("set labels...")
         pull.set_labels(*meta["labels"])
         # Workaround for bug https://github.com/PyGithub/PyGithub/issues/1406
         print("Add to assignees...")
         print("Assignees data:", meta["assignees"])
-        deepcopy(pull).add_to_assignees(*meta["assignees"])
+        #deepcopy(pull).add_to_assignees(*meta["assignees"])
+        pull.add_to_assignees(*meta["assignees"])
         if meta["reviewers"]:
             print("reviewers")
             pull.create_review_request(reviewers=meta["reviewers"])
